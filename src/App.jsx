@@ -6,6 +6,9 @@ import Confetti from "react-confetti";
 function App() {
   const [dice, setDice] = React.useState(allNewDice());
   const [tenzies, setTenzies] = React.useState(false);
+  const [numberOfRolls, setNumberOfRolls] = React.useState(0);
+  const [timeElapsed, setTimeElapsed] = React.useState(0);
+  const [gameStarted, setGameStarted] = React.useState(false);
 
   React.useEffect(() => {
     const allHeld = dice.every((die) => die.isHeld);
@@ -16,6 +19,18 @@ function App() {
       console.log("You won!");
     }
   }, [dice]);
+
+  // Update time elapsed every second
+  React.useEffect(() => {
+    let intervalId;
+    if (gameStarted && !tenzies) {
+      intervalId = setInterval(() => {
+        setTimeElapsed((prevTime) => prevTime + 1);
+      }, 1000);
+    }
+
+    return () => clearInterval(intervalId); // Cleanup function
+  }, [gameStarted, tenzies]);
 
   function generateNewDie() {
     return {
@@ -40,8 +55,12 @@ function App() {
           return die.isHeld ? die : generateNewDie();
         })
       );
+      setNumberOfRolls((old) => old + 1);
+      setGameStarted(true);
     } else {
       setTenzies(false);
+      setGameStarted(false);
+      setNumberOfRolls(0);
       setDice(allNewDice());
     }
   }
@@ -72,6 +91,16 @@ function App() {
           <p className="instructions">
             Roll until all dice are the same. Click each die to freeze it at its
             current value between rolls.
+          </p>
+          <p className="instructions">
+            <b>Number of Rolls: </b>
+            {numberOfRolls}
+          </p>
+          <p className="instructions">
+            <b>Time Elapsed:</b>{" "}
+            {gameStarted
+              ? `${timeElapsed} seconds`
+              : "Click the Roll Button to Start the Timer"}
           </p>
           <div className="dice-container">{diceElements}</div>
           <button className="roll-dice" onClick={rollDice}>
